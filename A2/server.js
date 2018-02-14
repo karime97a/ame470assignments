@@ -1,27 +1,22 @@
-var express = require("express");
-var app = express();
-var bodyParser = require('body-parser');
-var errorHandler = require('errorhandler');
-var methodOverride = require('method-override');
-var hostname = process.env.HOSTNAME || 'localhost';
-var port = 1234;
+<html>
+<head>
+  <script src='asyncReq.js'></script>
+  <script src='jquery-3.3.1.min.js'></script>
+  <script>
+function sendToServer(){
+	var userInput = "3-4";
+	loadFile("./eval?eq=" + userInput, function(resData){
+		$("#result").html(resData);
+	});
+}
+  </script>
 
-app.get("/", function (req, res) {
-    res.redirect("index.html");
-});
+</head>
 
-app.get("/eval", function (req, res) {
-  var eq = req.query.eq;
-
-  var r = eq + " = " + eval(eq) + "\n";
-   res.writeHead(200, {'Content-Type': 'text/plain'}); // send response header
-   res.end(r); // send response body
-});
-
-app.use(methodOverride());
-app.use(bodyParser());
-app.use(express.static(__dirname + '/public'));
-app.use(errorHandler());
-
-console.log("Simple static server listening at http://" + hostname + ":" + port);
-app.listen(port);
+<body>
+	<h1> Eval </h1>
+  <textarea id='eq'></textarea>
+  <button onclick='sendToServer()'> Evaluate </button>
+  <div id='result'> </div>
+</body>
+</html>
