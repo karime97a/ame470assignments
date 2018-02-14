@@ -4,8 +4,12 @@
   <script src='jquery-3.3.1.min.js'></script>
   <script>
 function sendToServer(){
-  // complete this function.
-  //  you can use loadFile()
+
+	var userInput = $("#eq").val();
+	console.log(userInput);
+	loadFile("./eval?eq=" + encodeURIComponent(userInput), function(resData){
+		$("#result").html(resData);
+	});
 }
   </script>
 
