@@ -2,36 +2,39 @@
 <head>
   <script src='asyncReq.js'></script>
   <script src='jquery-3.3.1.min.js'></script>
-
-  <script>
-    loadRSS("./getFeedData?url=")+window.location.has.replace("#", "")
-  </script>
+  <script src='ac.js'></script>
+  <link rel="stylesheet" type="text/css" href="ac.css">
   <style>
-
-    h1 {
-      color: rgb(10, 11, 78);
-      font-family: Verdana, Arial, sans-serif;
-      text-align: center;
-      font-size: 1.6em;
-    }
-
+  .item.active,
+  button.active,
+  .item.active button{
+    background:gold;
+  }
+  .item{
+    background:white;
+  }
+  .item,
   #theList button{
       border: 0px;
       padding: 0px;
       min-width: 100%;
       box-shadow: 0px 0px 1px;
+      border:none;
   }
+  button{
+    border:none;
+  }
+  #theFeedList button h1,
+  #theFeedList button h2,
   #theList button h1,
   #theList button h2
   {
-    background-color: rgb(248, 248, 255);
     padding: 0px;
     margin: 0px;
-    font-family: "Verdana, Arial, sans-serif"; /* */
-    font-size: 17px;
+    font-size: 20px;
     line-height: 20px;
     margin-bottom: 5px;
-    text-align: center; /**/
+    text-align: left;
   }
   #theList button h2
   {
@@ -40,33 +43,48 @@
   #theList button img{
       height: 100px;
       width: 100px;
-      float: center; /*left*/
+      float: left;
       margin-right: 5px;
-      margin-top: 3px;
   }
     #editButton{
-      float: right; /*right*/
-      margin-top: -20px; /*-50*/
-      margin-right: 8px;/*5*/
-    
-      /*margin-left: 3px;*/
+      float: right;
+      margin-top: -50px;
+      margin-right: 5px;
     }
-    #rssBox{
-      float:left; /*float:left;*/
+    #allRSSFeeds{
+      float:left;
       width: 250px;
       min-height: 100%;
-      background: rgb(194, 203, 255);
+      background: gray;
+    } 
+    #rssBox{
+      float:left;
+      width: 250px;
+      min-height: 100%;
+      background: lightgray;
     } 
     #theDetails{
-
       float:right;
-      width: calc(100% - 250px);
+      width: calc(100% - 500px);
       min-height: 100%;
-      background:  rgb(248, 248, 255);
+      background: lightgray;
       text-align:center;
     }
   </style>
   <script>
+  function renameClicked(n){
+    var currName = currRSSFeedList[n].name;
+    var id = currRSSFeedList[n].id;
+    var x = prompt("Rename Feed", currName);
+    console.log(x);
+    if(x){
+      var url = "./renameFeed?name=" + encodeURIComponent(x);
+      url += "&id=" + id;
+      loadFile(url, function(resData){
+          start();
+      });
+    }
+  }
   function getDataFromServer(){
     //var url = "./eval?eq=34-4*45";
     var url = "https://rss.itunes.apple.com/api/v1/us/apple-music/hot-tracks/all/10/explicit.json";
@@ -80,6 +98,50 @@
     var feedURL = prompt("Enter your RSS feed URL:");
     var url = "./getFeedData?url=" + feedURL;
     loadRSS(url);
+  }
+  function feedSelected(n)
+  {
+    ac.show();
+    var feedURL = currRSSFeedList[n].url;
+    var url = "./getFeedData?url=" + feedURL;
+    loadRSS(url);
+    $("#theFeedList .item").removeClass("active");
+    $("#theFeedList .item:nth-of-type(" + (n+1) + ")").addClass("active");
+  }
+  function addRSSSrc()
+  {
+    var feedURL = prompt("Enter new RSS feed URL:");
+    var url = "./addFeed?url=" + feedURL;
+    url += "&date=" + new Date().getTime();
+    url += "&name=Untitled";
+    url += "&id=test" + new Date().getTime();
+    loadFile(url, function(resData){
+        start();
+    })
+  }
+  function start()
+  {
+    ac.show();
+    var url = "./getAllFeeds";
+    loadFile(url, function(resData){
+       var allFeeds = JSON.parse(resData);
+       currRSSFeedList = allFeeds;
+        if(allFeeds.length == 0){
+          document.getElementById("theFeedList").innerHTML = "No feeds yet! Add some to start!!"
+        }
+        else{
+          var markup = "";
+          for(var i = 0; i < allFeeds.length; i++){
+            markup += "<div class='item'>";
+              markup += "<button onclick='feedSelected(" + i + ")'><h1>" + allFeeds[i].name+ "</h1><h2>" + allFeeds[i].url + "<h2></button>";
+              markup += '<a href="javascript:renameClicked(' + i + ')"> Rename </a>';
+              markup += '<a href="javascript:deleteClicked(' + i + ')"> Delete </a>';
+              markup += "</div>";
+          }
+          $("#theFeedList").html(markup);
+        }     
+        ac.hide();
+    });
   }
   function loadRSS(url){
     console.log(url);
@@ -95,10 +157,13 @@
         markup += "<button onclick='itemSelected(" + i + ")'><img src='" + thumb + "'><h1>" + name+ "</h1><h2>" + artist + "<h2></button>";
       }
       $("#theList").html(markup);
+      ac.hide();
     });
   }
   function itemSelected(n)
   {
+    $("#theList button").removeClass("active");
+    $("#theList button:nth-of-type(" + (n+1) + ")").addClass("active");
     var data = currRSSData[n];
     var markup = "";
     var thumbnail = data.artworkUrl100 || "";
@@ -114,10 +179,13 @@
 
 </head>
 
-<body>
-<div id='rssBox'>
+<body onload='start()'>
+<div id='allRSSFeeds'>
 	<h1> RSS Reader </h1>
-  <button id='editButton' onclick='changeRSSSrc()'> Edit </button>
+  <button id='editButton' onclick='addRSSSrc()'> Add</button>
+  <div id='theFeedList'></div>
+</div>
+<div id='rssBox'>
   <div id='theList'></div>
 </div>
 <div id='theDetails'></div>
