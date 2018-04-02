@@ -9,24 +9,26 @@ var port = 1234;
 var Client = require('node-rest-client').Client;
 
 var MS = require("mongoskin");
-var db = MS.db("mongodb://<13.57.249.56>:27017/ame470")
+var db = MS.db("mongodb://localhost:27017/ame470");
 
 
 app.get("/", function (req, res) {
     res.redirect("index.html");
 });
 
-app.get("/getFeedData", function (req, res) {
-  var url = req.query.url;
-  var client = new Client();
-  client.get(url, function (data, response) {
-    res.end(JSON.stringify(data)); // send response body
+app.get("/getImgData", function (req, res) {
+  var data = req.query;
+  var id = data.id;
+  db.collection("img").findOne({id:id}, function(err, result){
+        res.end(JSON.stringify(result));
   });
 });
 
 
 app.get("/getAllImgs", function (req, res) {
   db.collection('img').find().toArray(function(err, items) {
+    console.log(err, items);
+    if(!items) items = [];
     res.send(items);
   });
 });
@@ -70,3 +72,4 @@ app.use(errorHandler());
 
 console.log("Simple static server listening at http://" + hostname + ":" + port);
 app.listen(port);
+
