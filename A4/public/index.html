@@ -5,13 +5,26 @@
   <script src='ac.js'></script>
   <link rel="stylesheet" type="text/css" href="ac.css">
   <style>
+#theImageList .item button h1{
+    margin-left: 105px;
+}
+.item button .thumb{
+      width: 100px;
+    height: 100px;
+    float: left;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: 50%;
+    margin-right: 5px;
+    background-color:rgb(236, 159, 159);
+}
   .item.active,
   button.active,
   .item.active button{
-    background:gold;
+    background-color:rgb(245, 97, 129);
   }
   .item{
-    background:white;
+    background-color:rgb(236, 159, 159);
   }
   .item,
   #theList button{
@@ -23,6 +36,7 @@
   }
   button{
     border:none;
+    background-color:rgb(236, 159, 159);
   }
   #theImageList button h1,
   #theImageList button h2,
@@ -40,7 +54,6 @@
   {
     font-size: 15px;
   }
-
   #theList button img{
       height: 100px;
       width: 100px;
@@ -56,20 +69,22 @@
       float:left;
       width: 250px;
       min-height: 100%;
-      background: gray;
+      background-color: rgb(245, 196, 206);
     } 
     #rssBox{
       float:left;
       width: 250px;
       min-height: 100%;
-      background: lightgray;
     } 
     #theDetails{
       float:right;
       width: calc(100% - 250px);
       min-height: 100%;
-      background: lightgray;
+      background: rgb(245, 248, 197);
       text-align:center;
+          background-repeat: no-repeat;
+    background-position: 50%;
+    background-size: contain;
     }
   </style>
   <script>
@@ -86,7 +101,6 @@
       });
     }
   }
-
   function deleteClicked(n){
     var id = currRSSFeedList[n].id;
     var x = confirm("Delete Image?");
@@ -97,10 +111,6 @@
       });
     }
   }
-
-
-
-
   function getDataFromServer(){
     //var url = "./eval?eq=34-4*45";
     var url = "https://rss.itunes.apple.com/api/v1/us/apple-music/hot-tracks/all/10/explicit.json";
@@ -108,7 +118,6 @@
       $("#result").val(resData);
     });
   }
-
   var currRSSData = null;
   function changeRSSSrc()
   {
@@ -116,7 +125,6 @@
     var url = "./getFeedData?url=" + feedURL;
     loadRSS(url);
   }
-
   function feedSelected(n)
   {
     ac.show();
@@ -126,7 +134,6 @@
     $("#theImageList .item").removeClass("active");
     $("#theImageList .item:nth-of-type(" + (n+1) + ")").addClass("active");
   }
-
   function addImgSrc()
   {
     var feedURL = prompt("Enter new image URL:");
@@ -138,12 +145,22 @@
         start();
     })
   }
-
+  function imgSelected(n)
+  {
+    var currName = currRSSFeedList[n].name;
+    var id = currRSSFeedList[n].id;
+    var imgURL = currRSSFeedList[n].url;
+    document.getElementById("theDetails").style.backgroundImage = "url(" + imgURL + ")";
+   
+    $("#theImageList .item").removeClass("active");
+    $("#theImageList .item:nth-of-type(" + (n+1) + ")").addClass("active");
+  }
   function start()
   {
     ac.show();
     var url = "./getAllImgs";
     loadFile(url, function(resData){
+      console.log(resData);
        var allFeeds = JSON.parse(resData);
        currRSSFeedList = allFeeds;
         if(allFeeds.length == 0){
@@ -153,7 +170,7 @@
           var markup = "";
           for(var i = 0; i < allFeeds.length; i++){
             markup += "<div class='item'>";
-              markup += "<button onclick='imgSelected(" + i + ")'><h1>" + allFeeds[i].name+ "</h1><h2>" + allFeeds[i].url + "<h2></button>";
+            markup += "<button onclick='imgSelected(" + i + ")'><div class='thumb' style='background-image:url(" + allFeeds[i].url + ")'><h1>" + allFeeds[i].name+ "</h1></button>";
               markup += '<a href="javascript:renameClicked(' + i + ')"> Rename </a>';
               markup += '<a href="javascript:deleteClicked(' + i + ')"> Delete </a>';
               markup += "</div>";
@@ -163,7 +180,6 @@
         ac.hide();
     });
   }
-
   function loadRSS(url){
     console.log(url);
     loadFile(url, function(resData){
@@ -191,11 +207,8 @@
     var name = data.name || "";
     var link = data.url || "";
     console.log(data);
-
     markup += "<img src='" + thumbnail + "'>";
     markup += "<a target='_blank' href='" + link + "'><h1>" + name + "</h1></a>";
-
-
     $("#theDetails").html(markup);
     //document.getElementById("theDetails").innerHTML = markup;
   }
@@ -205,8 +218,8 @@
 
 <body onload='start()'>
 <div id='allImagesWrapper'>
-	<h1> Image Lib</h1>
-  <button id='editButton' onclick='addImgSrc()'> Add</button>
+	<h1> Image Lib </h1>
+  <button id='editButton' onclick='addImgSrc()'> Add </button>
   <div id='theImageList'></div>
 </div>
 <div id='theDetails'></div>
